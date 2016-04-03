@@ -6,15 +6,19 @@
 
 It passes the HTTP request and response as-is. It's a feature.
 
-*mod\_nano* consists of a single source file (`mod_nano.c` :-).
+*mod\_nano* consists of a single source file (`mod_nano.c` :-), and only works under the *prefork* MPM.
+
 
 [nanomsg]: http://nanomsg.org/ "nanomsg"
 [reqrep]: http://nanomsg.org/v0.8/nn_reqrep.7.html "REQREP"
 
 ### Motivation
 
-With nanomsg, you can decompose an application into several parts, which interact according to a communication pattern.  
-nanomsg offers multiple communication patterns: request/reply, publish/subscribe, pipeline...
+With nanomsg, you can decompose an application into several *parts*, which interact according to communication patterns.
+nanomsg offers multiple communication patterns: request/reply, publish/subscribe, pipeline...  
+The parts of an application are typically processes (but can also be threads), that run on possibly different machines (using the TCP transport), and can be programmed in different languages, see the [nanomsg documentation][nanomsgdoc].
+
+With this simple module (and the nanomsg library), you can therefore implement message mediated microservices (as mentioned by [hackernews:tptacek][tptacek]), and benefit from message-passing application designs over a scalable, reliable network library.
 
 *mod\_nano* uses [request/reply][reqrep] sockets, for several reasons:
 
@@ -26,10 +30,14 @@ nanomsg offers multiple communication patterns: request/reply, publish/subscribe
   Yet, the processing node could also play the role of an entry point, forwarding the request 
   to a collection of other processing nodes (using other communication patterns, pipeline...) 
   and relaying the result back to the HTTP user-agent.
+- simplicity.
+
+[tptacek]: https://news.ycombinator.com/user?id=tptacek "tptacek"
+[nanomsgdoc]: http://nanomsg.org/documentation.html "nanomsg documentation"
 
 ### Installation
 
-There are two pre-requisites: 
+There are two prerequisites: 
 
 1.  the [nanomsg][] library, 
 2.  [Apache 2][apache2] development files, on ubuntu package apache2-dev includes everything needed. 
@@ -90,7 +98,6 @@ Generally, [locations][locationdir] are appropriate, because channels can refer 
 Once configured, some processes are needed to handle the forwarded requests.
 Otherwise the HTTP user agent will wait for a while :-)
 
-nanomsg allows different processes (threads even), on possibly different machines, programmed in different languages to handle the requests, see the [nanomsg documentation][nanomsgdoc].
 Multiple channels (endpoints, maybe I should just rename this...) are needed to distribute the load across listening processes.
 But not all channels need to be listened to!
 If more than one process listens to the same endpoint, then only one will handle requests.
@@ -107,4 +114,3 @@ can help test the setup (the `sudo` command is one way to ensure that the IPC fi
 
 *mod\_nano* can log debug messages (apache log) with much detail to provide HTTP header and body information.
 
-[nanomsgdoc]: http://nanomsg.org/documentation.html "nanomsg documentation"

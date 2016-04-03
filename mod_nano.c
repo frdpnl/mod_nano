@@ -1,9 +1,21 @@
 /*
- * nanomsg apache module
- * 
- * github: frdpnl
+ *  A nanomsg Apache 2.4 module.
  *
- * */
+ *  Copyright 2016 frederic pinel (github: frdpnl)
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ * 
+ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -85,12 +97,10 @@ AP_DECLARE_MODULE(nano) =
 	STANDARD20_MODULE_STUFF,
 	create_dir_conf,	/* per-directory config handler */
 	merge_dir_conf,		/* per-directory merge config handler */
-	NULL,			/* create_svr_conf, per-server config
-				  *handler */
-	NULL,			/* merge_svr_conf, */
-	nano_directives,	/* directives, any directive we may have
-				  *for httpd */
-	register_hooks		/* our hook registering function, see next */
+	NULL,			/* create_svr_conf, per-server config handler */
+	NULL,			/* merge_svr_conf */
+	nano_directives,	/* directives, any directive we may have for httpd */
+	register_hooks		/* our hook registering function */
 };
 
 static void register_hooks(apr_pool_t *pool)
