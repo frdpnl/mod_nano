@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
 	for (int nm = 0;; ++nm) {
 		nbytes = nn_recv(soc, &request, NN_MSG, 0);
 		if (nbytes == -1) {
-			error(0, errno, "%d nn_recv [%s] %zdB", pid, (char *)request, nbytes);
+			error(0, errno, "%d nn_recv \"%s\" [%zd].", pid, (char *)request, nbytes);
 			sleep(1);
 			continue;
 		}
@@ -48,23 +48,24 @@ int main(int argc, char *argv[])
 		memcpy(req, request, nbytes*sizeof(char));
 		req[nbytes] = 0;
 		nn_freemsg(request);
-		printf("%s pid=%6d nn_recv:\n<%s>[len=%ld][recv=%ld]B\n", 
+		printf("%s pid=%6d nn_recv:\n\"%s\" [len=%ld][recv=%ld].\n", 
 			__FILE__, pid, req, strlen(req), nbytes);
 		nbytes = snprintf(reply, replen -1, 
-			"HTTP/1.1 200 Fine\r\nContent-type: text/html\r\n\r\n<html><body><h2>hello %ldB</h2></body></html>", 
+			"HTTP/1.1 200 OK\r\nContent-type: text/html\r\n\r\n<html><body><h2>hello %ldB</h2></body></html>", 
 			nbytes);
 		if (nbytes <= 0 || nbytes >= replen -1) {
 			exit4err("snprintf", 0, 0);
 		}
-		printf ("replying with: <%s>[%u]B.\n", reply, (int)strlen(reply));
+		printf("Replying with: \"%s\" [len=%u].\n", reply, (int)strlen(reply));
 		nbytes = nn_send(soc, reply, strlen(reply), 0);
 		if (nbytes != strlen(reply)) {
-			error(0, errno, "%d nn_send [%s] %zdB", pid, reply, nbytes);
+			error(0, errno, "%d nn_send \"%s\" [%zd]", pid, reply, nbytes);
 			sleep(1);
 			continue;
 		}
-		printf ("%s pid=%6d nn_sent:\n<%s>[%zd]B\n", __FILE__, pid, reply, nbytes);
+		printf("%s pid=%6d nn_sent:\n\"%s\" [%zd]\n", __FILE__, pid, reply, nbytes);
 		free(req);
+		fflush(NULL);
 	}
 	free(reply);
 	exit4err("nn_shutdown", nn_shutdown(soc, end), -1);

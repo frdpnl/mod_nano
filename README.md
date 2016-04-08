@@ -59,9 +59,18 @@ Some configuration is necessary to use the module.
 The module defines a single directive: `nanoChannel`, which defines the endpoint for a nanomsg socket 
 (it's called channel because endpoint could be misleading in an HTTP context).
 
-Example configuration, which can be placed in a virtual host section:
+Example configuration entries, which can be placed in a virtual host section:
 
 		LogLevel info nano:debug
+
+		<Location "/api">
+			SetHandler nano-handler
+			nanoChannel ipc:///tmp/ipc/default 1
+		</Location>
+			
+		<Location "/api/elo">
+			nanoChannel ipc:///tmp/ipc/elo 1
+		</Location>
 
 		<LocationMatch "^/api/">
 			SetHandler nano-handler
@@ -79,13 +88,16 @@ Example configuration, which can be placed in a virtual host section:
 
 This example says that:
 
-- HTTP requests destined to /api/one are routed to a socket composed of two inter-process communication endpoints.
-On POSIX systems, UNIX domain sockets are used for IPC.   
+- HTTP requests destined to `/api` (and `/api/*`) are handled by module *mod\_nano*, and routed to a nanomsg socket, connected by one inter-process communication (IPC) channel, `default`.
+On POSIX systems, UNIX domain sockets are used for IPC.
+The module can merge parent and child configurations, allowing to use a default configuration, such as in this example.
+- HTTP requests destined to `/api/elo` are routed to a nanomsg socket composed of one inter-process communication endpoint.
+- HTTP requests destined to `/api/one` are routed to a socket composed of two inter-process communication endpoints.
 Why two endpoints? To distribute the load across two endpoints.
 A process bound to the endpoint will get the message, and must reply.
 If several processes bind to the _same_ endpoint, then they act as failover.
-- HTTP requests destined to /api/two are routed to another socket composed of one endpoint.
-- HTTP requests destined to /api/_something_ are routed to a default socket.
+- HTTP requests destined to `/api/two` are routed to another socket composed of one endpoint.
+- HTTP requests destined to `/api/something-else` are routed to the default socket.
 
 The numbers after the endpoints are the priorities. 
 This is currently not implemented, but will be shortly because of it's benefits (failover to a remote site for instance).
@@ -111,7 +123,9 @@ You can start multiple of these to test (assuming `mod_nano_rep.c` builds to a `
 
 		sudo -u www-data ./reply.out ipc:///tmp/ipc/one-1
 
-can help test the setup (the `sudo` command is one way to ensure that the IPC file descriptor is accessible to both the `httpd` and the handling process).
+can help test the setup.
+Make sure that the file permissions allow access to the IPC file descriptor (`sudo -u www-data touch /tmp/ipc/foobar`), from both the user running Apache2 (`www-data` here) and the request handling process.
+There are many ways to achieve this, this is just one example.
 
-*mod\_nano* can log debug messages (apache log) with much detail to provide HTTP header and body information.
+*mod\_nano* can log messages (to the Apache log) to help debug.
 
