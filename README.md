@@ -23,9 +23,10 @@ With this simple module (and the nanomsg library), you can therefore implement m
 *mod\_nano* uses [request/reply][reqrep] sockets, for several reasons:
 
 - nanomsg request/reply match well (subjective :-) the semantics of HTTP, from the nanomsg request/reply RFC:
-> [this RFC] defines a scalability protocol used for distributing
+> This document defines a scalability protocol used for distributing
 > processing tasks among arbitrary number of stateless processing nodes
 > and returning the results of the processing.
+
 - HTTP requests can be fully handled by a processing request/reply node.
   Yet, the processing node could also play the role of an entry point, forwarding the request 
   to a collection of other processing nodes (using other communication patterns, pipeline...) 
@@ -105,7 +106,7 @@ However, in case of process termination, the other listening process will take o
 This can make for non-stop software upgrades.
 All of this is dynamic, meaning that new handling processes can be added, removed at runtime, and nanomsg will adjust.
 
-As an example, `mod_nano_rep.c` binds to an endpoint/channel and replies with a HTTP message length.
+As an example handling process, the simple program `mod_nano_rep.c` binds to an endpoint/channel and replies with a HTTP message length.
 You can start multiple of these to test (assuming `mod_nano_rep.c` builds to a `reply.out` executable):
 
 		sudo -u www-data ./reply.out ipc:///tmp/ipc/one-1
